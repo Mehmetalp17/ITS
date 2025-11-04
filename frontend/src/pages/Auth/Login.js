@@ -61,6 +61,11 @@ const Login = () => {
             />
           </div>
         </div>
+        <div class="color-strips">
+          <div class="strip strip-yellow"></div>
+          <div class="strip strip-red"></div>
+          <div class="strip strip-blue"></div>
+        </div>
         {/* Main Content */}
         <div className="login-content">
           {/* Title */}
