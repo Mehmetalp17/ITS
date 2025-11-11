@@ -270,8 +270,48 @@ ITS/
 │   └── package.json
 │
 ├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   │
+│   ├── src/
+│   │   ├── App.css
+│   │   ├── App.js
+│   │   ├── App.test.js
+│   │   ├── index.css
+│   │   ├── index.js
+│   │   ├── reportWebVitals.js
+│   │   ├── setupTests.js
+│   │
+│   │   ├── assets/          # Images and static media files
+│   │   │   └── (örnek: main-page-logo.png)
+│   │
+│   │   ├── pages/
+│   │   │   ├── Admin/       # Administrator (Admin) interfaces
+│   │   │   │   ├── AdminMainPage.css
+│   │   │   │   ├── AdminMainPage.js     
+│   │   │   │   ├── AdminProfile.css     
+│   │   │   │   ├── AdminProfile.js
+│   │   │   │   ├── CommissionMembers.css
+│   │   │   │   ├── CommissionMembers.js
+│   │   │   │   ├── MemberAssignment.css
+│   │   │   │   └── MemberAssignment.js
+│   │   │   │
+│   │   │   └── Auth/       # Authentication pages
+│   │   │       ├── CodeVerify.css
+│   │   │       ├── CodeVerify.js
+│   │   │       ├── EmailEntry.css
+│   │   │       ├── EmailEntry.js
+│   │   │       ├── Login.css
+│   │   │       └── Login.js
+│   │
+│   └── package.json
+
+
 │       ...
 ```
+
 
 
 ## 📚 Additional Resources
