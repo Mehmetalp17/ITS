@@ -144,21 +144,7 @@ const StudentList = () => {
 
         } catch (error) {
             console.error('Error generating report:', error);
-            
-            // Handle blob error responses
-            if (error.response && error.response.data instanceof Blob) {
-                try {
-                    const text = await error.response.data.text();
-                    const errorData = JSON.parse(text);
-                    setError(errorData.error || 'Rapor oluşturulurken hata oluştu.');
-                } catch (parseError) {
-                    setError('Rapor oluşturulurken hata oluştu.');
-                }
-            } else if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError('Rapor oluşturulurken hata oluştu.');
-            }
+            setError('Rapor oluşturulurken hata oluştu.');
         } finally {
             setLoading(false);
         }

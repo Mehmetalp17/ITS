@@ -16,6 +16,18 @@ const CommissionChairAssignment = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [showWarning, setShowWarning] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+
+    // Toast notification helper
+    const showToast = (message, type = 'info') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+    };
+
+    const showConfirm = (message, onConfirm) => {
+        setConfirmDialog({ show: true, message, onConfirm });
+    };
 
     useEffect(() => {
         fetchDepartments();
@@ -77,22 +89,20 @@ const CommissionChairAssignment = () => {
     const handleRemoveChair = async () => {
         if (!currentChair || !formData.departmentId) return;
 
-        if (!window.confirm('Bu komisyon başkanını kaldırmak istediğinizden emin misiniz?')) {
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await axios.delete(`http://localhost:3001/api/remove-commission-chair/${currentChair.id}`);
-            setSuccess('Komisyon başkanı başarıyla kaldırıldı.');
-            setCurrentChair(null);
-            setShowWarning(false);
-        } catch (err) {
-            console.error('Error removing chair:', err);
-            setError(err.response?.data?.error || 'Başkan kaldırılırken bir hata oluştu.');
-        } finally {
-            setLoading(false);
-        }
+        showConfirm('Bu komisyon başkanını kaldırmak istediğinizden emin misiniz?', async () => {
+            setLoading(true);
+            try {
+                await axios.delete(`http://localhost:3001/api/remove-commission-chair/${currentChair.id}`);
+                showToast('Komisyon başkanı başarıyla kaldırıldı.', 'success');
+                setCurrentChair(null);
+                setShowWarning(false);
+            } catch (err) {
+                console.error('Error removing chair:', err);
+                showToast(err.response?.data?.error || 'Başkan kaldırılırken bir hata oluştu.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -103,15 +113,21 @@ const CommissionChairAssignment = () => {
 
         // Confirm replacement if there's an existing chair
         if (showWarning && currentChair) {
-            const confirmReplace = window.confirm(
-                `${currentChair.name} adlı kullanıcı zaten bu bölümün başkanı. Yeni başkan atandığında mevcut başkan kaldırılacak. Devam etmek istiyor musunuz?`
+            showConfirm(
+                `${currentChair.name} adlı kullanıcı zaten bu bölümün başkanı. Yeni başkan atandığında mevcut başkan kaldırılacak. Devam etmek istiyor musunuz?`,
+                async () => {
+                    await performSubmit();
+                }
             );
-            if (!confirmReplace) {
-                setLoading(false);
-                return;
-            }
+            setLoading(false);
+            return;
         }
 
+        await performSubmit();
+    };
+
+    const performSubmit = async () => {
+        setLoading(true);
         try {
             await axios.post('http://localhost:3001/api/create-commission-chair', {
                 departmentId: parseInt(formData.departmentId),
@@ -121,14 +137,14 @@ const CommissionChairAssignment = () => {
                 temporaryPassword: formData.temporaryPassword
             });
 
-            setSuccess('Komisyon başkanı başarıyla atandı!');
+            showToast('Komisyon başkanı başarıyla atandı!', 'success');
             setFormData({ departmentId: formData.departmentId, firstName: '', lastName: '', email: '', temporaryPassword: '' });
             
             // Refresh current chair
             fetchCurrentChair(formData.departmentId);
         } catch (err) {
             console.error('Error assigning chair:', err);
-            setError(err.response?.data?.error || 'Atama sırasında bir hata oluştu.');
+            showToast(err.response?.data?.error || 'Atama sırasında bir hata oluştu.', 'error');
         } finally {
             setLoading(false);
         }
@@ -285,6 +301,56 @@ const CommissionChairAssignment = () => {
                     )}
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className={`toast-notification toast-${toast.type}`}>
+                    <div className="toast-content">
+                        <i className={`fa-solid fa-${
+                            toast.type === 'success' ? 'check-circle' :
+                            toast.type === 'error' ? 'exclamation-circle' :
+                            toast.type === 'warning' ? 'exclamation-triangle' :
+                            'info-circle'
+                        }`}></i>
+                        <span>{toast.message}</span>
+                    </div>
+                    <button className="toast-close" onClick={() => setToast({ show: false, message: '', type: '' })}>
+                        <i className="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            )}
+
+            {/* Confirm Dialog */}
+            {confirmDialog.show && (
+                <div className="modal-overlay" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}>
+                    <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div className="confirm-header">
+                            <i className="fa-solid fa-question-circle"></i>
+                            <h3>Onay</h3>
+                        </div>
+                        <div className="confirm-body">
+                            <p>{confirmDialog.message}</p>
+                        </div>
+                        <div className="confirm-footer">
+                            <button 
+                                className="btn-modal-cancel" 
+                                onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}
+                            >
+                                İptal
+                            </button>
+                            <button 
+                                className="btn-modal-confirm btn-confirm-danger" 
+                                onClick={() => {
+                                    confirmDialog.onConfirm();
+                                    setConfirmDialog({ show: false, message: '', onConfirm: null });
+                                }}
+                            >
+                                <i className="fa-solid fa-check"></i> Onayla
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -246,21 +246,7 @@ const EarlyEvaluation = () => {
             }, 3000);
         } catch (error) {
             console.error('Error creating report:', error);
-            
-            // Handle blob error responses
-            if (error.response && error.response.data instanceof Blob) {
-                try {
-                    const text = await error.response.data.text();
-                    const errorData = JSON.parse(text);
-                    setError(errorData.error || 'Değerlendirme kaydedilirken veya rapor oluşturulurken hata oluştu.');
-                } catch (parseError) {
-                    setError('Değerlendirme kaydedilirken veya rapor oluşturulurken hata oluştu.');
-                }
-            } else if (error.response && error.response.data && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError('Değerlendirme kaydedilirken veya rapor oluşturulurken hata oluştu.');
-            }
+            setError('Değerlendirme kaydedilirken veya rapor oluşturulurken hata oluştu.');
         } finally {
             setLoading(false);
         }

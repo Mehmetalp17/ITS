@@ -15,6 +15,13 @@ const ChangePassword = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [userEmail, setUserEmail] = useState('');
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+    // Toast notification helper
+    const showToast = (message, type = 'info') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+    };
 
     useEffect(() => {
         // Check if user is authenticated
@@ -72,13 +79,17 @@ const ChangePassword = () => {
             user.requiresPasswordChange = false;
             localStorage.setItem('user', JSON.stringify(user));
 
-            // Redirect based on role
-            alert('Şifreniz başarıyla değiştirildi!');
-            if (user.role?.name === 'Commission Chair') {
-                navigate('/chair-dashboard');
-            } else {
-                navigate('/dashboard');
-            }
+            // Show success message and redirect
+            showToast('Şifreniz başarıyla değiştirildi!', 'success');
+            setTimeout(() => {
+                if (user.role?.name === 'Commission Chair') {
+                    navigate('/chair-dashboard');
+                } else if (user.role?.name === 'Commission Member') {
+                    navigate('/member-dashboard');
+                } else {
+                    navigate('/dashboard');
+                }
+            }, 1500);
         } catch (err) {
             console.error('Password change error:', err);
             setError(err.response?.data?.error || 'Şifre değiştirilirken bir hata oluştu');
@@ -149,6 +160,24 @@ const ChangePassword = () => {
                     </form>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className={`toast-notification toast-${toast.type}`}>
+                    <div className="toast-content">
+                        <i className={`fa-solid fa-${
+                            toast.type === 'success' ? 'check-circle' :
+                            toast.type === 'error' ? 'exclamation-circle' :
+                            toast.type === 'warning' ? 'exclamation-triangle' :
+                            'info-circle'
+                        }`}></i>
+                        <span>{toast.message}</span>
+                    </div>
+                    <button className="toast-close" onClick={() => setToast({ show: false, message: '', type: '' })}>
+                        <i className="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            )}
         </>
     );
 };

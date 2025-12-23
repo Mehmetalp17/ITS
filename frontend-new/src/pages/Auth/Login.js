@@ -38,6 +38,8 @@ const Login = () => {
                 // Redirect based on role
                 if (response.user.role?.name === 'Commission Chair') {
                     navigate('/chair-dashboard');
+                } else if (response.user.role?.name === 'Commission Member') {
+                    navigate('/member-dashboard');
                 } else {
                     navigate('/dashboard');
                 }

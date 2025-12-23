@@ -51,6 +51,11 @@ const authService = {
         return null;
     },
 
+    // Get authentication token
+    getToken: () => {
+        return localStorage.getItem('token');
+    },
+
     // Check if user is logged in
     isAuthenticated: () => {
         return localStorage.getItem('token') !== null;

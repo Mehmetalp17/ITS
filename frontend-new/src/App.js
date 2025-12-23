@@ -5,6 +5,7 @@ import ForgotPassword from './pages/Auth/ForgotPassword';
 import ChangePassword from './pages/Auth/ChangePassword';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ChairDashboard from './pages/Chair/ChairDashboard';
+import MemberDashboard from './pages/Member/MemberDashboard';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/chair-dashboard" element={<ChairDashboard />} />
+          <Route path="/member-dashboard" element={<MemberDashboard />} />
         </Routes>
       </div>
     </Router>

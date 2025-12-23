@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import authService from '../../services/authService';
 import './AddCommissionMember.css';
 
+const API_URL = 'http://localhost:3001/api';
+
 const AddCommissionMember = () => {
-    const [currentMembers, setCurrentMembers] = useState([
-        { id: 1, name: 'Mehmet Kaya', email: 'mehmet.kaya@example.com' },
-        { id: 2, name: 'Ayşe Demir', email: 'ayse.demir@example.com' }
-    ]);
+    const [currentMembers, setCurrentMembers] = useState([]);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -15,6 +16,39 @@ const AddCommissionMember = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+
+    // Toast notification helper
+    const showToast = (message, type = 'info') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+    };
+
+    const showConfirm = (message, onConfirm) => {
+        setConfirmDialog({ show: true, message, onConfirm });
+    };
+
+    // Fetch current members on component mount
+    useEffect(() => {
+        fetchCurrentMembers();
+    }, []);
+
+    const fetchCurrentMembers = async () => {
+        try {
+            const user = authService.getCurrentUser();
+            if (!user || !user.department) {
+                setError('Kullanıcı bölümü bulunamadı.');
+                return;
+            }
+
+            const response = await axios.get(`${API_URL}/department-members/${user.department.id}`);
+            setCurrentMembers(response.data);
+        } catch (error) {
+            console.error('Error fetching members:', error);
+            setError('Komisyon üyeleri yüklenirken hata oluştu.');
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -25,36 +59,56 @@ const AddCommissionMember = () => {
         setSuccess('');
     };
 
-    const handleRemoveMember = (memberId) => {
-        if (!window.confirm('Bu komisyon üyesini kaldırmak istediğinizden emin misiniz?')) {
-            return;
-        }
+    const handleRemoveMember = async (memberId) => {
+        showConfirm('Bu komisyon üyesini kaldırmak istediğinizden emin misiniz?', async () => {
+            setLoading(true);
+            setError('');
+            setSuccess('');
 
-        // Frontend only - remove from state
-        setCurrentMembers(currentMembers.filter(m => m.id !== memberId));
-        setSuccess('Komisyon üyesi başarıyla kaldırıldı.');
-        setTimeout(() => setSuccess(''), 3000);
+            try {
+                await axios.delete(`${API_URL}/remove-commission-member/${memberId}`);
+                showToast('Komisyon üyesi başarıyla kaldırıldı.', 'success');
+                fetchCurrentMembers(); // Refresh the list
+            } catch (error) {
+                console.error('Error removing member:', error);
+                showToast(error.response?.data?.error || 'Üye kaldırılırken hata oluştu.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         setSuccess('');
 
-        // Frontend only - simulate adding member
-        setTimeout(() => {
-            const newMember = {
-                id: Date.now(),
-                name: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email
-            };
-            
-            setCurrentMembers([...currentMembers, newMember]);
-            setSuccess('Komisyon üyesi başarıyla atandı!');
+        try {
+            const user = authService.getCurrentUser();
+            if (!user || !user.department) {
+                setError('Kullanıcı bölümü bulunamadı.');
+                setLoading(false);
+                return;
+            }
+
+            const response = await axios.post(`${API_URL}/create-commission-member`, {
+                departmentId: user.department.id,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                temporaryPassword: formData.temporaryPassword
+            });
+
+            showToast(response.data.message || 'Komisyon üyesi başarıyla eklendi!', 'success');
             setFormData({ firstName: '', lastName: '', email: '', temporaryPassword: '' });
+            fetchCurrentMembers(); // Refresh the list
+        } catch (error) {
+            console.error('Error creating member:', error);
+            showToast(error.response?.data?.error || 'Üye eklenirken hata oluştu.', 'error');
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
 
     return (
@@ -185,6 +239,56 @@ const AddCommissionMember = () => {
                     )}
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className={`toast-notification toast-${toast.type}`}>
+                    <div className="toast-content">
+                        <i className={`fa-solid fa-${
+                            toast.type === 'success' ? 'check-circle' :
+                            toast.type === 'error' ? 'exclamation-circle' :
+                            toast.type === 'warning' ? 'exclamation-triangle' :
+                            'info-circle'
+                        }`}></i>
+                        <span>{toast.message}</span>
+                    </div>
+                    <button className="toast-close" onClick={() => setToast({ show: false, message: '', type: '' })}>
+                        <i className="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            )}
+
+            {/* Confirm Dialog */}
+            {confirmDialog.show && (
+                <div className="modal-overlay" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}>
+                    <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div className="confirm-header">
+                            <i className="fa-solid fa-question-circle"></i>
+                            <h3>Onay</h3>
+                        </div>
+                        <div className="confirm-body">
+                            <p>{confirmDialog.message}</p>
+                        </div>
+                        <div className="confirm-footer">
+                            <button 
+                                className="btn-modal-cancel" 
+                                onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}
+                            >
+                                İptal
+                            </button>
+                            <button 
+                                className="btn-modal-confirm btn-confirm-danger" 
+                                onClick={() => {
+                                    confirmDialog.onConfirm();
+                                    setConfirmDialog({ show: false, message: '', onConfirm: null });
+                                }}
+                            >
+                                <i className="fa-solid fa-check"></i> Onayla
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -440,6 +440,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-06-15T00:00:00Z'),
       endDate: new Date('2025-07-15T00:00:00Z'),
       grade: 'S', // Satisfactory
+      gradeComment: 'Excellent performance. Demonstrated strong technical skills and professionalism.',
       reportUrl: 'https://example.com/reports/s1_staj1.pdf',
       documentUrl: 'https://example.com/docs/s1_staj1.pdf',
       companyContactName: 'Ahmet Yılmaz',
@@ -509,6 +510,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-01-15T00:00:00Z'),
       endDate: new Date('2025-02-15T00:00:00Z'),
       grade: 'S',
+      gradeComment: 'Good adaptation to corporate environment. Met all requirements.',
     },
   });
 
@@ -552,6 +554,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-06-20T00:00:00Z'),
       endDate: new Date('2025-07-18T00:00:00Z'),
       grade: 'S',
+      gradeComment: 'Performed well and showed initiative in assigned tasks.',
     },
   });
 
@@ -616,6 +619,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-07-07T00:00:00Z'),
       endDate: new Date('2025-08-01T00:00:00Z'),
       grade: 'S',
+      gradeComment: 'Outstanding work ethic and collaboration skills.',
     },
   });
 
@@ -659,6 +663,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-06-16T00:00:00Z'),
       endDate: new Date('2025-07-28T00:00:00Z'),
       grade: 'S',
+      gradeComment: 'Solid performance throughout the internship period.',
     },
   });
 
@@ -703,6 +708,7 @@ const s12 = await prisma.student.upsert({
       startDate: new Date('2025-01-20T00:00:00Z'),
       endDate: new Date('2025-02-14T00:00:00Z'),
       grade: 'S',
+      gradeComment: 'Meets all expectations. Ready for advanced internship.',
     },
   });
   await prisma.internship.upsert({
