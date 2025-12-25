@@ -56,6 +56,16 @@ model User {
   createdAt               DateTime @default(now())
 }
 
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   // The 6-digit code
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
 // ------------------------
 // Departments
 // ------------------------

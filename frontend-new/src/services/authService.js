@@ -28,14 +28,40 @@ const authService = {
         }
     },
 
-    // Reset password function
-    resetPassword: async (email, newPassword) => {
+    // Step 1: Request Password Reset Code
+    forgotPassword: async (email) => {
         try {
-            const response = await api.post('/reset-password', { email, newPassword });
+            const response = await api.post('/forgot-password', { email });
             return response.data;
         } catch (error) {
             throw error.response?.data || { error: 'Bağlantı hatası oluştu' };
         }
+    },
+
+    // Step 2: Verify Code
+    verifyResetCode: async (email, code) => {
+        try {
+            const response = await api.post('/verify-reset-code', { email, code });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { error: 'Bağlantı hatası oluştu' };
+        }
+    },
+
+    // Step 3: Reset Password with Verified Code
+    resetPasswordSecure: async (email, code, newPassword) => {
+        try {
+            const response = await api.post('/reset-password-secure', { email, code, newPassword });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { error: 'Bağlantı hatası oluştu' };
+        }
+    },
+
+    // Legacy/Unused
+    resetPassword: async (email, newPassword) => {
+       // Deprecated
+       return authService.resetPasswordSecure(email, '000000', newPassword);
     },
 
     // Logout function
