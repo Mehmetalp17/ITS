@@ -1,13 +1,15 @@
-import nodemailer from 'nodemailer';
+import formData from 'form-data';
+import Mailgun from 'mailgun.js';
 
-// Configure Email Transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
+// Initialize Mailgun client
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+    username: 'api',
+    key: process.env.MAILGUN_API_KEY || ''
 });
+
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@mail.gtustajtakip.com.tr';
 
 /**
  * Generate HTML email template for password reset
@@ -104,38 +106,14 @@ const generatePasswordResetEmail = (code) => {
 };
 
 /**
- * Send password reset email
- * @param {string} email - Recipient email address
- * @param {string} code - 6-digit reset code
- * @returns {Promise} Email send promise
- */
-export const sendPasswordResetEmail = async (email, code) => {
-    const htmlContent = generatePasswordResetEmail(code);
-    
-    const mailOptions = {
-        from: {
-            name: 'GTÜ Staj Takip Sistemi',
-            address: process.env.EMAIL_USER
-        },
-        to: email,
-        subject: 'ITS Şifre Sıfırlama Kodu',
-        html: htmlContent,
-        text: `Şifre sıfırlama kodunuz: ${code}\n\nBu kod 15 dakika süreyle geçerlidir.\n\nEğer bu talebi siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.`
-    };
-
-    return transporter.sendMail(mailOptions);
-};
-
-/**
- * Send welcome email to new user (for future use)
- * @param {string} email - Recipient email address
- * @param {string} name - User name
- * @param {string} username - Username
+ * Generate HTML email template for welcome email with credentials
+ * @param {string} name - User's name
+ * @param {string} username - User's username
  * @param {string} temporaryPassword - Temporary password
- * @returns {Promise} Email send promise
+ * @returns {string} HTML email content
  */
-export const sendWelcomeEmail = async (email, name, username, temporaryPassword) => {
-    const htmlContent = `
+const generateWelcomeEmail = (name, username, temporaryPassword) => {
+    return `
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -200,19 +178,62 @@ export const sendWelcomeEmail = async (email, name, username, temporaryPassword)
 </body>
 </html>
     `.trim();
+};
 
-    const mailOptions = {
-        from: {
-            name: 'GTÜ Staj Takip Sistemi',
-            address: process.env.EMAIL_USER
-        },
+/**
+ * Send password reset email using Mailgun
+ * @param {string} email - Recipient email address
+ * @param {string} code - 6-digit reset code
+ * @returns {Promise} Email send promise
+ */
+export const sendPasswordResetEmail = async (email, code) => {
+    const htmlContent = generatePasswordResetEmail(code);
+    
+    const messageData = {
+        from: `GTÜ Staj Takip Sistemi <${EMAIL_FROM}>`,
+        to: email,
+        subject: 'ITS Şifre Sıfırlama Kodu',
+        html: htmlContent,
+        text: `Şifre sıfırlama kodunuz: ${code}\n\nBu kod 15 dakika süreyle geçerlidir.\n\nEğer bu talebi siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.`
+    };
+
+    try {
+        const response = await mg.messages.create(MAILGUN_DOMAIN, messageData);
+        console.log('Password reset email sent successfully:', response);
+        return response;
+    } catch (error) {
+        console.error('Mailgun error sending password reset email:', error);
+        throw error;
+    }
+};
+
+/**
+ * Send welcome email with credentials using Mailgun
+ * @param {string} email - Recipient email address
+ * @param {string} name - User's name
+ * @param {string} username - User's username
+ * @param {string} temporaryPassword - Temporary password
+ * @returns {Promise} Email send promise
+ */
+export const sendWelcomeEmail = async (email, name, username, temporaryPassword) => {
+    const htmlContent = generateWelcomeEmail(name, username, temporaryPassword);
+    
+    const messageData = {
+        from: `GTÜ Staj Takip Sistemi <${EMAIL_FROM}>`,
         to: email,
         subject: 'GTÜ Staj Takip Sistemi - Hesap Bilgileriniz',
         html: htmlContent,
         text: `Hoş Geldiniz, ${name}!\n\nGTÜ Staj Takip Sistemi'ne hoş geldiniz.\n\nKullanıcı Adı: ${username}\nGeçici Şifre: ${temporaryPassword}\n\nİlk girişinizde şifrenizi değiştirmeniz gerekmektedir.`
     };
 
-    return transporter.sendMail(mailOptions);
+    try {
+        const response = await mg.messages.create(MAILGUN_DOMAIN, messageData);
+        console.log('Welcome email sent successfully:', response);
+        return response;
+    } catch (error) {
+        console.error('Mailgun error sending welcome email:', error);
+        throw error;
+    }
 };
 
 export default {
