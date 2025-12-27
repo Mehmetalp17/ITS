@@ -21,6 +21,53 @@ export const getAllTerms = async (req, res) => {
     }
 };
 
+// Create a new term
+export const createTerm = async (req, res) => {
+    try {
+        const { name, startDate, endDate } = req.body;
+
+        // Validate required fields
+        if (!name || !startDate || !endDate) {
+            return res.status(400).json({ error: 'Dönem adı, başlangıç ve bitiş tarihi zorunludur.' });
+        }
+
+        // Validate date format and logic
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({ error: 'Geçersiz tarih formatı.' });
+        }
+
+        if (start >= end) {
+            return res.status(400).json({ error: 'Bitiş tarihi başlangıç tarihinden sonra olmalıdır.' });
+        }
+
+        // Check if term name already exists
+        const existingTerm = await prisma.term.findUnique({
+            where: { name }
+        });
+
+        if (existingTerm) {
+            return res.status(409).json({ error: 'Bu isimde bir dönem zaten mevcut.' });
+        }
+
+        // Create the term
+        const newTerm = await prisma.term.create({
+            data: {
+                name,
+                startDate: start,
+                endDate: end
+            }
+        });
+
+        res.status(201).json(newTerm);
+    } catch (error) {
+        console.error('Error creating term:', error);
+        res.status(500).json({ error: 'Dönem oluşturulurken bir hata oluştu.' });
+    }
+};
+
 // Get students with internships for a specific department and term
 export const getStudentsByDepartmentAndTerm = async (req, res) => {
     try {

@@ -1,16 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma.js';
-import nodemailer from 'nodemailer';
-
-// Configure Email Transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+import { sendPasswordResetEmail } from '../utils/emailService.js';
 
 export const login = async (req, res) => {
     try {
@@ -96,23 +87,14 @@ export const forgotPassword = async (req, res) => {
             }
         });
 
-        console.log(`[DEV ONLY] Password Reset Code for ${email}: ${code}`);
-
-        // Send Email using the requested structure
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email, // Send to the user who requested the reset
-            subject: 'ITS Şifre Sıfırlama Kodu',
-            text: `Şifre sıfırlama kodunuz: ${code}\n\nBu kod 15 dakika süreyle geçerlidir.`
-        };
-
-        transporter.sendMail(mailOptions, function(error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
-        });
+        // Send password reset email
+        try {
+            await sendPasswordResetEmail(email, code);
+            console.log(`Password reset email sent to ${email}`);
+        } catch (emailError) {
+            console.error('Error sending email:', emailError);
+            // Don't fail the request if email fails, code is still valid
+        }
 
         res.json({ message: 'Doğrulama kodu e-posta adresinize gönderildi.' });
 

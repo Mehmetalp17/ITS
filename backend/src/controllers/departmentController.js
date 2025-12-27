@@ -241,7 +241,7 @@ export const getCommissionStatus = async (req, res) => {
             }
         });
 
-        // Format the response
+        // Format the response - Include ALL departments
         const commissionStatus = departments.map(dept => {
             const chair = dept.users.find(u => u.roleId === chairRole?.id);
             const members = dept.users.filter(u => u.roleId === memberRole?.id);
@@ -252,7 +252,7 @@ export const getCommissionStatus = async (req, res) => {
                 member1: members[0] ? members[0].name : null,
                 member2: members[1] ? members[1].name : null
             };
-        }).filter(item => item.chairName || item.member1 || item.member2); // Include departments with any commission member
+        }); // Return all departments, not just those with members
 
         res.json(commissionStatus);
 
