@@ -521,6 +521,7 @@ export async function generateCommissionReport(req, res) {
     const whereClause = {
       termId: parseInt(termId),
       isReported: false, // Only include internships that haven't been reported yet
+      grade: { not: null }, // CRITICAL: Only include graded internships
       student: {
         departmentId: parseInt(departmentId)
       }
@@ -536,8 +537,10 @@ export async function generateCommissionReport(req, res) {
     // Apply grade filter
     if (gradeFilter && gradeFilter !== 'all') {
       if (gradeFilter === 'ungraded') {
+        // If filtering for ungraded, override the grade condition
         whereClause.grade = null;
       } else {
+        // Filter for specific grade (S or U)
         whereClause.grade = gradeFilter;
       }
     }
@@ -562,7 +565,7 @@ export async function generateCommissionReport(req, res) {
     // Check if there are any internships to report
     if (internships.length === 0) {
       return res.status(404).json({ 
-        error: 'Raporlanacak staj bulunamadı. Tüm stajlar zaten raporlanmış olabilir.' 
+        error: 'Raporlanacak notlandırılmış staj bulunamadı. Lütfen önce stajları notlandırın veya filtrelerinizi kontrol edin.' 
       });
     }
 
@@ -758,7 +761,7 @@ export async function generateCommissionReport(req, res) {
                     children: [new Paragraph({ text: new Date(internship.endDate).toLocaleDateString('tr-TR'), alignment: AlignmentType.CENTER })]
                   }),
                   new TableCell({
-                    children: [new Paragraph({ text: internship.grade || '-', alignment: AlignmentType.CENTER })]
+                    children: [new Paragraph({ text: internship.grade, alignment: AlignmentType.CENTER })]
                   }),
                 ]
               }))
@@ -786,7 +789,7 @@ export async function generateCommissionReport(req, res) {
     // Generate buffer
     const buffer = await Packer.toBuffer(doc);
 
-    // Mark all internships as reported
+    // Mark all the fetched graded internships as reported
     await prisma.internship.updateMany({
       where: whereClause,
       data: {

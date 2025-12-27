@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import authService from '../../services/authService';
-import UploadInternshipPDF from './UploadInternshipPDF';
-import StudentList from './StudentList';
-import GradeInternship from './GradeInternship';
-import EarlyEvaluation from './EarlyEvaluation';
+// Import shared components from Chair folder
+import UploadInternshipPDF from '../Chair/UploadInternshipPDF';
+import StudentList from '../Chair/StudentList';
+import GradeInternship from '../Chair/GradeInternship';
+import EarlyEvaluation from '../Chair/EarlyEvaluation';
 import './MemberDashboard.css';
 
 const MemberDashboard = () => {

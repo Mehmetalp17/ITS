@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import './CommissionStatus.css';
+
+// Register fonts with pdfMake
+if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+}
 
 // API Configuration
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -40,7 +47,92 @@ const CommissionStatus = () => {
     };
 
     const handleExportPDF = () => {
-        window.print();
+        // Prepare table body
+        const tableBody = commissionData.map(item => [
+            item.departmentName || '-',
+            item.chairName || '-',
+            item.member1 || '-',
+            item.member2 || '-'
+        ]);
+
+        // Define PDF document
+        const docDefinition = {
+            content: [
+                // Title
+                {
+                    text: 'Gebze Teknik Üniversitesi',
+                    style: 'header',
+                    alignment: 'center',
+                    margin: [0, 0, 0, 5]
+                },
+                {
+                    text: 'Staj Takip Sistemi',
+                    style: 'header',
+                    alignment: 'center',
+                    margin: [0, 0, 0, 5]
+                },
+                {
+                    text: 'Komisyon Durumu',
+                    style: 'header',
+                    alignment: 'center',
+                    margin: [0, 0, 0, 10]
+                },
+                {
+                    text: `Tarih: ${new Date().toLocaleDateString('tr-TR')}`,
+                    alignment: 'center',
+                    margin: [0, 0, 0, 20],
+                    fontSize: 10
+                },
+                // Table
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['40%', '20%', '20%', '20%'],
+                        body: [
+                            [
+                                { text: 'Bölüm', style: 'tableHeader' },
+                                { text: 'Başkan', style: 'tableHeader' },
+                                { text: 'Üye 1', style: 'tableHeader' },
+                                { text: 'Üye 2', style: 'tableHeader' }
+                            ],
+                            ...tableBody
+                        ]
+                    },
+                    layout: {
+                        fillColor: function (rowIndex) {
+                            return rowIndex === 0 ? '#2980b9' : (rowIndex % 2 === 0 ? '#f3f3f3' : null);
+                        },
+                        hLineWidth: function () { return 0.5; },
+                        vLineWidth: function () { return 0.5; },
+                        hLineColor: function () { return '#cccccc'; },
+                        vLineColor: function () { return '#cccccc'; }
+                    }
+                }
+            ],
+            styles: {
+                header: {
+                    fontSize: 16,
+                    bold: true
+                },
+                tableHeader: {
+                    bold: true,
+                    fontSize: 11,
+                    color: 'white',
+                    fillColor: '#2980b9'
+                }
+            },
+            defaultStyle: {
+                fontSize: 9
+            },
+            pageMargins: [40, 60, 40, 60]
+        };
+
+        // Generate filename with date
+        const dateStr = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+        const filename = `komisyon-durumu-${dateStr}.pdf`;
+        
+        // Generate and download PDF
+        pdfMake.createPdf(docDefinition).download(filename);
     };
 
     if (loading) {

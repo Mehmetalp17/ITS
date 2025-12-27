@@ -291,16 +291,44 @@ const UploadInternshipPDF = () => {
         setError(null);
     };
 
-    const handleAddTerm = () => {
+    const handleAddTerm = async () => {
         if (!newTerm.name || !newTerm.startDate || !newTerm.endDate) {
             showToast('Lütfen tüm alanları doldurun!', 'warning');
             return;
         }
-        console.log('Yeni dönem eklendi:', newTerm);
-        // TODO: Backend'e gönderilecek
-        setShowAddTermModal(false);
-        setNewTerm({ name: '', startDate: '', endDate: '' });
-        showToast('Dönem başarıyla eklendi!', 'success');
+
+        try {
+            setLoading(true);
+            const response = await axios.post(
+                `${API_URL}/terms`,
+                {
+                    name: newTerm.name,
+                    startDate: newTerm.startDate,
+                    endDate: newTerm.endDate
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${authService.getToken()}`
+                    }
+                }
+            );
+
+            // Add the new term to the list and select it
+            const createdTerm = response.data;
+            setTerms([createdTerm, ...terms]);
+            setSelectedTermId(createdTerm.id);
+
+            // Close modal and reset form
+            setShowAddTermModal(false);
+            setNewTerm({ name: '', startDate: '', endDate: '' });
+            showToast('Dönem başarıyla eklendi!', 'success');
+        } catch (error) {
+            console.error('Error creating term:', error);
+            const errorMsg = error.response?.data?.error || 'Dönem eklenirken bir hata oluştu.';
+            showToast(errorMsg, 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const formatDateForInput = (dateStr) => {
