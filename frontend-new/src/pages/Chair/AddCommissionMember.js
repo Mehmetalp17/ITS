@@ -203,32 +203,34 @@ const AddCommissionMember = () => {
                             Bu bölümde henüz komisyon üyesi atanmamış.
                         </div>
                     ) : (
-                        <table className="styled-table">
-                            <thead>
-                                <tr>
-                                    <th>İsim Soyisim</th>
-                                    <th>E-posta</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentMembers.map(member => (
-                                    <tr key={member.id}>
-                                        <td>{member.name}</td>
-                                        <td>{member.email}</td>
-                                        <td>
-                                            <button 
-                                                className="btn-sil" 
-                                                onClick={() => handleRemoveMember(member.id)}
-                                                disabled={loading}
-                                            >
-                                                <i className="fa-solid fa-trash"></i> Sil
-                                            </button>
-                                        </td>
+                        <div className="table-wrapper">
+                            <table className="styled-table">
+                                <thead>
+                                    <tr>
+                                        <th>İsim Soyisim</th>
+                                        <th>E-posta</th>
+                                        <th>İşlem</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {currentMembers.map(member => (
+                                        <tr key={member.id}>
+                                            <td>{member.name}</td>
+                                            <td>{member.email}</td>
+                                            <td>
+                                                <button 
+                                                    className="btn-sil" 
+                                                    onClick={() => handleRemoveMember(member.id)}
+                                                    disabled={loading}
+                                                >
+                                                    <i className="fa-solid fa-trash"></i> Sil
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
 
                     {currentMembers.length >= 2 && (

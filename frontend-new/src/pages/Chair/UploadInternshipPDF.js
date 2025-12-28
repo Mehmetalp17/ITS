@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../../services/authService';
+import CustomSelect from '../../components/common/CustomSelect';
 import './UploadInternshipPDF.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -370,16 +371,13 @@ const UploadInternshipPDF = () => {
                         <div className="form-group">
                             <label htmlFor="donem">Dönem Seçimi</label>
                             <div className="input-group-with-button">
-                                <select 
-                                    id="donem"
+                                <CustomSelect
+                                    options={terms.map(term => ({ value: term.id, label: term.name }))}
                                     value={selectedTermId}
-                                    onChange={(e) => setSelectedTermId(parseInt(e.target.value))}
+                                    onChange={(val) => setSelectedTermId(val)}
                                     disabled={loading}
-                                >
-                                    {terms.map(term => (
-                                        <option key={term.id} value={term.id}>{term.name}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Dönem Seçiniz"
+                                />
                                 <button className="btn-add-term" onClick={() => setShowAddTermModal(true)}>
                                     <i className="fa-solid fa-plus"></i> Dönem Ekle
                                 </button>
@@ -497,13 +495,14 @@ const UploadInternshipPDF = () => {
                             <h4 className="card-title">Mevcut Staj Bilgileri</h4>
                             <div className="compact-form-group">
                                 <label>Staj Tipi</label>
-                                <select 
+                                <CustomSelect
+                                    options={[
+                                        { value: 'STAJ1', label: 'Zorunlu Staj 1' },
+                                        { value: 'STAJ2', label: 'Zorunlu Staj 2' }
+                                    ]}
                                     value={currentStudent.internshipInfo.type}
-                                    onChange={(e) => handleInputChange('type', e.target.value, 'internshipInfo')}
-                                >
-                                    <option value="STAJ1">Zorunlu Staj 1</option>
-                                    <option value="STAJ2">Zorunlu Staj 2</option>
-                                </select>
+                                    onChange={(val) => handleInputChange('type', val, 'internshipInfo')}
+                                />
                             </div>
                             <div className="compact-form-group">
                                 <label>Başlangıç</label>

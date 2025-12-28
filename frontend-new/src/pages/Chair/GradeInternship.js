@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../../services/authService';
+import CustomSelect from '../../components/common/CustomSelect';
 import './GradeInternship.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -242,6 +243,32 @@ const GradeInternship = () => {
         return startDate < termDates.start || endDate > termDates.end;
     };
 
+    // Prepare filter options
+    const termOptions = terms.map(term => ({ value: term.id, label: term.name }));
+    const gradeOptions = [
+        { value: 'all', label: 'Tümü' },
+        { value: 'S', label: 'S (Başarılı)' },
+        { value: 'U', label: 'U (Başarısız)' },
+        { value: 'ungraded', label: 'Puanlanmamış' }
+    ];
+    const typeOptions = [
+        { value: 'all', label: 'Tümü' },
+        { value: 'first', label: 'Zorunlu Staj 1' },
+        { value: 'second', label: 'Zorunlu Staj 2' }
+    ];
+
+    const gradingOptions = [
+        { value: '', label: 'Seçiniz' },
+        { value: 'S', label: 'S (Başarılı)' },
+        { value: 'U', label: 'U (Başarısız)' }
+    ];
+
+    const renderGradeLabel = (option) => {
+        if (option.value === 'S') return <span style={{ color: '#28a745', fontWeight: '600' }}>{option.label}</span>;
+        if (option.value === 'U') return <span style={{ color: '#dc3545', fontWeight: '600' }}>{option.label}</span>;
+        return option.label;
+    };
+
     return (
         <div>
             <h2>Staj Puanlandır</h2>
@@ -253,46 +280,34 @@ const GradeInternship = () => {
             <div className="filters-card">
                 <div className="filter-row">
                     <div className="filter-group">
-                        <label htmlFor="term-select">Dönem Seçiniz:</label>
-                        <select 
-                            id="term-select"
+                        <label>Dönem Seçiniz:</label>
+                        <CustomSelect
+                            options={termOptions}
                             value={selectedTermId}
-                            onChange={(e) => setSelectedTermId(parseInt(e.target.value))}
+                            onChange={(val) => setSelectedTermId(val)}
                             disabled={loading}
-                        >
-                            {terms.map(term => (
-                                <option key={term.id} value={term.id}>{term.name}</option>
-                            ))}
-                        </select>
+                            placeholder="Dönem Seçiniz"
+                        />
                     </div>
 
                     <div className="filter-group">
-                        <label htmlFor="grade-filter">Puana Göre Filtrele:</label>
-                        <select 
-                            id="grade-filter"
+                        <label>Puana Göre Filtrele:</label>
+                        <CustomSelect
+                            options={gradeOptions}
                             value={gradeFilter}
-                            onChange={(e) => setGradeFilter(e.target.value)}
+                            onChange={(val) => setGradeFilter(val)}
                             disabled={loading}
-                        >
-                            <option value="all">Tümü</option>
-                            <option value="S">Başarılı (S)</option>
-                            <option value="U">Başarısız (U)</option>
-                            <option value="ungraded">Puanlanmamış</option>
-                        </select>
+                        />
                     </div>
 
                     <div className="filter-group">
-                        <label htmlFor="type-filter">Staj Tipi:</label>
-                        <select 
-                            id="type-filter"
+                        <label>Staj Tipi:</label>
+                        <CustomSelect
+                            options={typeOptions}
                             value={studentTypeFilter}
-                            onChange={(e) => setStudentTypeFilter(e.target.value)}
+                            onChange={(val) => setStudentTypeFilter(val)}
                             disabled={loading}
-                        >
-                            <option value="all">Tümü</option>
-                            <option value="first">Zorunlu Staj 1</option>
-                            <option value="second">Zorunlu Staj 2</option>
-                        </select>
+                        />
                     </div>
                 </div>
 
@@ -331,68 +346,69 @@ const GradeInternship = () => {
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '30px' }}>Yükleniyor...</div>
                 ) : (
-                    <table className="styled-table grading-table">
-                        <thead>
-                            <tr>
-                                <th style={{width: '10%'}}>Numara</th>
-                                <th style={{width: '15%'}}>Ad Soyad</th>
-                                <th style={{width: '15%'}}>Staj Yeri</th>
-                                    <th style={{width: '10%'}}>Başlangıç</th>
-                                <th style={{width: '10%'}}>Bitiş</th>
-                                <th style={{width: '12%'}}>Staj Notu</th>
-                                <th style={{width: '28%'}}>Açıklama (Opsiyonel)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredStudents.length === 0 ? (
+                    <div className="table-wrapper">
+                        <table className="styled-table grading-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>
-                                        <i className="fa-solid fa-circle-info"></i> Seçili filtrelere uygun öğrenci bulunamadı.
-                                    </td>
+                                    <th style={{width: '10%'}}>Numara</th>
+                                    <th style={{width: '15%'}}>Ad Soyad</th>
+                                    <th style={{width: '15%'}}>Staj Yeri</th>
+                                        <th style={{width: '10%'}}>Başlangıç</th>
+                                    <th style={{width: '10%'}}>Bitiş</th>
+                                    <th style={{width: '12%'}}>Staj Notu</th>
+                                    <th style={{width: '28%'}}>Açıklama (Opsiyonel)</th>
                                 </tr>
-                            ) : (
-                                filteredStudents.map(student => {
-                                    const internship = student.currentInternship;
-                                    if (!internship) return null;
+                            </thead>
+                            <tbody>
+                                {filteredStudents.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>
+                                            <i className="fa-solid fa-circle-info"></i> Seçili filtrelere uygun öğrenci bulunamadı.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredStudents.map(student => {
+                                        const internship = student.currentInternship;
+                                        if (!internship) return null;
 
-                                    const outOfRange = isOutOfTermRange(
-                                        internship.startDate?.split('T')[0],
-                                        internship.endDate?.split('T')[0]
-                                    );
-                                    
-                                    return (
-                                        <tr key={`${student.id}-${internship.id}`} className={outOfRange ? 'out-of-term-range' : ''}>
-                                            <td>{student.id}</td>
-                                            <td>{student.name}</td>
-                                            <td>{internship.company || 'N/A'}</td>
-                                            <td>{internship.startDate ? new Date(internship.startDate).toLocaleDateString('tr-TR') : 'N/A'}</td>
-                                            <td>{internship.endDate ? new Date(internship.endDate).toLocaleDateString('tr-TR') : 'N/A'}</td>
-                                            <td>
-                                                <select 
-                                                    className="grade-select"
-                                                    value={getGradeValue(student)}
-                                                    onChange={(e) => handleGradeChange(internship.id, e.target.value)}
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    <option value="S">S (Başarılı)</option>
-                                                    <option value="U">U (Başarısız)</option>
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input 
-                                                    type="text"
-                                                    className="note-input"
-                                                    placeholder="Açıklama ekleyin..."
-                                                    value={getNoteValue(student)}
-                                                    onChange={(e) => handleNoteChange(internship.id, e.target.value)}
-                                                />
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
+                                        const outOfRange = isOutOfTermRange(
+                                            internship.startDate?.split('T')[0],
+                                            internship.endDate?.split('T')[0]
+                                        );
+                                        
+                                        return (
+                                            <tr key={`${student.id}-${internship.id}`} className={outOfRange ? 'out-of-term-range' : ''}>
+                                                <td>{student.id}</td>
+                                                <td>{student.name}</td>
+                                                <td>{internship.company || 'N/A'}</td>
+                                                <td>{internship.startDate ? new Date(internship.startDate).toLocaleDateString('tr-TR') : 'N/A'}</td>
+                                                <td>{internship.endDate ? new Date(internship.endDate).toLocaleDateString('tr-TR') : 'N/A'}</td>
+                                                <td style={{overflow: 'visible'}}>
+                                                    <CustomSelect
+                                                        className="table-select"
+                                                        options={gradingOptions}
+                                                        value={getGradeValue(student)}
+                                                        onChange={(val) => handleGradeChange(internship.id, val)}
+                                                        renderLabel={renderGradeLabel}
+                                                        placeholder="Seçiniz"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input 
+                                                        type="text"
+                                                        className="note-input"
+                                                        placeholder="Açıklama ekleyin..."
+                                                        value={getNoteValue(student)}
+                                                        onChange={(e) => handleNoteChange(internship.id, e.target.value)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
                 
                 <div className="table-footer">

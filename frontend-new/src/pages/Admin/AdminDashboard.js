@@ -44,7 +44,7 @@ const AdminDashboard = () => {
                     <div>
                         <div className="info-bar">
                             <i className="fa-solid fa-circle-info"></i>
-                            <strong>Bilgilendirme:</strong> Staj Takip Sistemi Admin Paneline hoş geldiniz.
+                            Staj Takip Sistemi Admin Paneline hoş geldiniz.
                         </div>
                         <h2>Ana Sayfa</h2>
                         <p>Hoş geldiniz, <strong>{user.name || user.username}</strong>!</p>

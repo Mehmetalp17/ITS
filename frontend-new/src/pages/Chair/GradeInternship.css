@@ -200,35 +200,6 @@
     background-color: rgba(220, 53, 69, 0.1);
 }
 
-/* Grade Select */
-.grade-select {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 0.9em;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-family: 'Poppins', sans-serif;
-    color: #495057;
-    background-color: white;
-    cursor: pointer;
-}
-
-.grade-select:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.grade-select option[value="S"] {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.grade-select option[value="U"] {
-    color: #dc3545;
-    font-weight: 600;
-}
-
 /* Note Input */
 .note-input {
     width: 100%;
@@ -292,7 +263,6 @@
         padding: 10px 8px;
     }
     
-    .grade-select,
     .note-input {
         font-size: 0.8em;
         padding: 6px 8px;
@@ -400,4 +370,58 @@
 
 .toast-close:hover {
     color: #333;
+}
+
+@media (max-width: 768px){
+    .table-container-card {
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    .table-header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .grading-table {
+        min-width: 600px;
+    }
+}
+
+/* Table Wrapper for Horizontal Scroll */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Responsive Save Button */
+@media (max-width: 768px) {
+    .table-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-save-grades {
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
 }

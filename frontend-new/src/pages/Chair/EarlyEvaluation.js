@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../../services/authService';
+import CustomSelect from '../../components/common/CustomSelect';
 import './EarlyEvaluation.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -292,52 +293,46 @@ const EarlyEvaluation = () => {
             <div className="filters-card">
                 <div className="filter-row">
                     <div className="filter-group">
-                        <label htmlFor="term-select">Dönem Seçiniz:</label>
-                        <select 
-                            id="term-select"
+                        <label>Dönem Seçiniz:</label>
+                        <CustomSelect
+                            options={terms.length === 0 
+                                ? [{ value: '', label: 'Dönem bulunamadı' }] 
+                                : terms.map(term => ({ value: term.id.toString(), label: term.name }))
+                            }
                             value={selectedTerm}
-                            onChange={(e) => setSelectedTerm(e.target.value)}
+                            onChange={(val) => setSelectedTerm(val)}
                             disabled={loading || terms.length === 0}
-                        >
-                            {terms.length === 0 ? (
-                                <option>Dönem bulunamadı</option>
-                            ) : (
-                                terms.map(term => (
-                                    <option key={term.id} value={term.id}>
-                                        {term.name}
-                                    </option>
-                                ))
-                            )}
-                        </select>
+                            placeholder="Dönem Seçiniz"
+                        />
                     </div>
 
                     <div className="filter-group">
-                        <label htmlFor="grade-filter">Puana Göre Filtrele:</label>
-                        <select 
-                            id="grade-filter"
+                        <label>Puana Göre Filtrele:</label>
+                        <CustomSelect
+                            options={[
+                                { value: 'all', label: 'Tümü' },
+                                { value: 'S', label: 'Başarılı (S)' },
+                                { value: 'U', label: 'Başarısız (U)' },
+                                { value: 'ungraded', label: 'Puanlanmamış' }
+                            ]}
                             value={gradeFilter}
-                            onChange={(e) => setGradeFilter(e.target.value)}
+                            onChange={(val) => setGradeFilter(val)}
                             disabled={loading}
-                        >
-                            <option value="all">Tümü</option>
-                            <option value="S">Başarılı (S)</option>
-                            <option value="U">Başarısız (U)</option>
-                            <option value="ungraded">Puanlanmamış</option>
-                        </select>
+                        />
                     </div>
 
                     <div className="filter-group">
-                        <label htmlFor="type-filter">Staj Tipi:</label>
-                        <select 
-                            id="type-filter"
+                        <label>Staj Tipi:</label>
+                        <CustomSelect
+                            options={[
+                                { value: 'all', label: 'Tümü' },
+                                { value: 'first', label: 'Zorunlu Staj 1' },
+                                { value: 'second', label: 'Zorunlu Staj 2' }
+                            ]}
                             value={studentTypeFilter}
-                            onChange={(e) => setStudentTypeFilter(e.target.value)}
+                            onChange={(val) => setStudentTypeFilter(val)}
                             disabled={loading}
-                        >
-                            <option value="all">Tümü</option>
-                            <option value="first">Zorunlu Staj 1</option>
-                            <option value="second">Zorunlu Staj 2</option>
-                        </select>
+                        />
                     </div>
                 </div>
 
@@ -374,78 +369,80 @@ const EarlyEvaluation = () => {
                     </div>
                 )}
 
-                <table className="styled-table">
-                    <thead>
-                        <tr>
-                            <th style={{width: '4%'}}>
-                                <input 
-                                    type="checkbox"
-                                    checked={filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length}
-                                    onChange={handleSelectAll}
-                                />
-                            </th>
-                            <th style={{width: '10%'}}>Numara</th>
-                            <th style={{width: '13%'}}>Ad Soyad</th>
-                            <th style={{width: '15%'}}>Önceki Staj Yeri</th>
-                            <th style={{width: '15%'}}>Mevcut Staj Yeri</th>
-                            <th style={{width: '12%'}}>Başlangıç</th>
-                            <th style={{width: '12%'}}>Bitiş</th>
-                            <th style={{width: '10%'}}>Staj Notu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
+                <div className="table-wrapper">
+                    <table className="styled-table">
+                        <thead>
                             <tr>
-                                <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
-                                    <i className="fa-solid fa-spinner fa-spin"></i> Yükleniyor...
-                                </td>
+                                <th style={{width: '4%'}}>
+                                    <input 
+                                        type="checkbox"
+                                        checked={filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length}
+                                        onChange={handleSelectAll}
+                                    />
+                                </th>
+                                <th style={{width: '10%'}}>Numara</th>
+                                <th style={{width: '13%'}}>Ad Soyad</th>
+                                <th style={{width: '15%'}}>Önceki Staj Yeri</th>
+                                <th style={{width: '15%'}}>Mevcut Staj Yeri</th>
+                                <th style={{width: '12%'}}>Başlangıç</th>
+                                <th style={{width: '12%'}}>Bitiş</th>
+                                <th style={{width: '10%'}}>Staj Notu</th>
                             </tr>
-                        ) : filteredStudents.length === 0 ? (
-                            <tr>
-                                <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
-                                    <i className="fa-solid fa-circle-info"></i> Seçili filtrelere uygun öğrenci bulunamadı.
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredStudents.map(student => {
-                                if (!student.currentInternship) return null;
-                                
-                                const outOfRange = isOutOfTermRange(
-                                    student.currentInternship.startDate,
-                                    student.currentInternship.endDate
-                                );
-                                
-                                return (
-                                    <tr key={student.id} className={outOfRange ? 'out-of-term-range' : ''}>
-                                        <td>
-                                            <input 
-                                                type="checkbox"
-                                                checked={selectedStudents.includes(student.id)}
-                                                onChange={() => handleSelectStudent(student.id)}
-                                            />
-                                        </td>
-                                        <td>{student.studentNumber}</td>
-                                        <td>{student.name}</td>
-                                        <td>
-                                            {student.previousInternship 
-                                                ? student.previousInternship.company 
-                                                : <span className="no-data">-</span>
-                                            }
-                                        </td>
-                                        <td>{student.currentInternship.company}</td>
-                                        <td>{new Date(student.currentInternship.startDate).toLocaleDateString('tr-TR')}</td>
-                                        <td>{new Date(student.currentInternship.endDate).toLocaleDateString('tr-TR')}</td>
-                                        <td>
-                                            <span className={`grade-badge ${student.currentInternship.grade ? `grade-${student.currentInternship.grade.toLowerCase()}` : 'grade-ungraded'}`}>
-                                                {student.currentInternship.grade || '-'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
+                                        <i className="fa-solid fa-spinner fa-spin"></i> Yükleniyor...
+                                    </td>
+                                </tr>
+                            ) : filteredStudents.length === 0 ? (
+                                <tr>
+                                    <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
+                                        <i className="fa-solid fa-circle-info"></i> Seçili filtrelere uygun öğrenci bulunamadı.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredStudents.map(student => {
+                                    if (!student.currentInternship) return null;
+                                    
+                                    const outOfRange = isOutOfTermRange(
+                                        student.currentInternship.startDate,
+                                        student.currentInternship.endDate
+                                    );
+                                    
+                                    return (
+                                        <tr key={student.id} className={outOfRange ? 'out-of-term-range' : ''}>
+                                            <td>
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={selectedStudents.includes(student.id)}
+                                                    onChange={() => handleSelectStudent(student.id)}
+                                                />
+                                            </td>
+                                            <td>{student.studentNumber}</td>
+                                            <td>{student.name}</td>
+                                            <td>
+                                                {student.previousInternship 
+                                                    ? student.previousInternship.company 
+                                                    : <span className="no-data">-</span>
+                                                }
+                                            </td>
+                                            <td>{student.currentInternship.company}</td>
+                                            <td>{new Date(student.currentInternship.startDate).toLocaleDateString('tr-TR')}</td>
+                                            <td>{new Date(student.currentInternship.endDate).toLocaleDateString('tr-TR')}</td>
+                                            <td>
+                                                <span className={`grade-badge ${student.currentInternship.grade ? `grade-${student.currentInternship.grade.toLowerCase()}` : 'grade-ungraded'}`}>
+                                                    {student.currentInternship.grade || '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
                 
                 <div className="table-footer">
                     <button 
@@ -486,14 +483,15 @@ const EarlyEvaluation = () => {
                                         <div className="evaluation-inputs">
                                             <div className="eval-input-group">
                                                 <label>Not:</label>
-                                                <select 
+                                                <CustomSelect
+                                                    options={[
+                                                        { value: 'S', label: 'S (Başarılı)' },
+                                                        { value: 'U', label: 'U (Başarısız)' }
+                                                    ]}
                                                     value={evaluationData[student.id]?.grade || ''}
-                                                    onChange={(e) => handleEvaluationChange(student.id, 'grade', e.target.value)}
-                                                >
-                                                    <option value="">Seçiniz</option>
-                                                    <option value="S">S (Başarılı)</option>
-                                                    <option value="U">U (Başarısız)</option>
-                                                </select>
+                                                    onChange={(val) => handleEvaluationChange(student.id, 'grade', val)}
+                                                    placeholder="Seçiniz"
+                                                />
                                             </div>
                                             
                                             <div className="eval-input-group">
