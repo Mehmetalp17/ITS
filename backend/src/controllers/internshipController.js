@@ -2,7 +2,26 @@ import prisma from '../config/prisma.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdf = require('pdf-parse');
+import multer from 'multer';
+import path from 'path';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from 'docx';
+import { uploadFileToS3, deleteFileFromS3, getSignedUrlForFile } from '../utils/s3Service.js';
+
+// Configure multer for file uploads
+const upload = multer({
+  dest: 'uploads/', // Temporary local storage
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only accept PDF files
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  }
+});
 
 /**
  * Parse internship PDF file
@@ -810,3 +829,103 @@ export async function generateCommissionReport(req, res) {
     });
   }
 }
+
+/**
+ * Upload document for an internship
+ * POST /api/internship/upload-document
+ * Body: multipart/form-data with 'file' field and 'internshipId'
+ */
+export async function uploadDocument(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { internshipId } = req.body;
+
+    if (!internshipId) {
+      return res.status(400).json({ error: 'Internship ID is required' });
+    }
+
+    // Check if internship exists
+    const internship = await prisma.internship.findUnique({
+      where: { id: parseInt(internshipId) }
+    });
+
+    if (!internship) {
+      return res.status(404).json({ error: 'Internship not found' });
+    }
+
+    // If there's an existing document, delete it from S3
+    if (internship.documentUrl) {
+      try {
+        await deleteFileFromS3(internship.documentUrl);
+      } catch (error) {
+        console.error('Error deleting old document:', error);
+        // Continue even if deletion fails
+      }
+    }
+
+    // Upload file to S3
+    const s3Key = await uploadFileToS3(req.file, 'internship-documents');
+
+    // Update internship with S3 key (not URL)
+    const updatedInternship = await prisma.internship.update({
+      where: { id: parseInt(internshipId) },
+      data: { documentUrl: s3Key }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Document uploaded successfully',
+      documentUrl: updatedInternship.documentUrl
+    });
+
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    return res.status(500).json({
+      error: 'Failed to upload document',
+      details: error.message
+    });
+  }
+}
+
+/**
+ * Get signed URL for internship document
+ * GET /api/internship/:id/document-url
+ */
+export async function getDocumentUrl(req, res) {
+  try {
+    const { id } = req.params;
+
+    const internship = await prisma.internship.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!internship) {
+      return res.status(404).json({ error: 'Internship not found' });
+    }
+
+    if (!internship.documentUrl) {
+      return res.status(404).json({ error: 'No document found for this internship' });
+    }
+
+    // Generate signed URL (valid for 1 hour)
+    const signedUrl = await getSignedUrlForFile(internship.documentUrl, 3600);
+
+    return res.json({
+      success: true,
+      url: signedUrl
+    });
+
+  } catch (error) {
+    console.error('Error getting document URL:', error);
+    return res.status(500).json({
+      error: 'Failed to get document URL',
+      details: error.message
+    });
+  }
+}
+
+// Export multer upload middleware
+export { upload };

@@ -80,6 +80,7 @@ const UploadInternshipPDF = () => {
                     // Convert parsed data to student format
                     parsedStudents.push({
                         fileName: file.name,
+                        file: file, // Keep reference to the actual file
                         studentInfo: {
                             name: parsed.studentName,
                             studentNumber: parsed.studentId,
@@ -161,6 +162,30 @@ const UploadInternshipPDF = () => {
 
             console.log('Internship created:', response.data);
             
+            // Upload the PDF document to S3
+            if (student.file && response.data.internship) {
+                try {
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('file', student.file);
+                    uploadFormData.append('internshipId', response.data.internship.id);
+
+                    await axios.post(
+                        `${API_URL}/internship/upload-document`,
+                        uploadFormData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                                Authorization: `Bearer ${authService.getToken()}`
+                            }
+                        }
+                    );
+                    console.log('Document uploaded successfully');
+                } catch (uploadErr) {
+                    console.error('Error uploading document:', uploadErr);
+                    // Don't fail the whole process if upload fails
+                }
+            }
+            
             // Move to next student or finish
             if (currentStudentIndex < studentsData.length - 1) {
                 setCurrentStudentIndex(currentStudentIndex + 1);
@@ -214,11 +239,34 @@ const UploadInternshipPDF = () => {
                         isErasmus: student.studentInfo.isErasmus
                     };
 
-                    await axios.post(
+                    const response = await axios.post(
                         `${API_URL}/internship/create`,
                         internshipData,
                         { headers: { Authorization: `Bearer ${authService.getToken()}` } }
                     );
+
+                    // Upload the PDF document to S3
+                    if (student.file && response.data.internship) {
+                        try {
+                            const uploadFormData = new FormData();
+                            uploadFormData.append('file', student.file);
+                            uploadFormData.append('internshipId', response.data.internship.id);
+
+                            await axios.post(
+                                `${API_URL}/internship/upload-document`,
+                                uploadFormData,
+                                {
+                                    headers: {
+                                        'Content-Type': 'multipart/form-data',
+                                        Authorization: `Bearer ${authService.getToken()}`
+                                    }
+                                }
+                            );
+                        } catch (uploadErr) {
+                            console.error('Error uploading document for student:', student.studentInfo.name, uploadErr);
+                            // Don't fail the whole process if upload fails
+                        }
+                    }
 
                     successCount++;
                 } catch (err) {

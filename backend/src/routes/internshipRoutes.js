@@ -7,7 +7,10 @@ import {
   updateInternship,
   deleteInternship,
   debugDeleteInternship,
-  generateCommissionReport
+  generateCommissionReport,
+  uploadDocument,
+  getDocumentUrl,
+  upload as uploadMiddleware
 } from '../controllers/internshipController.js';
 import { authenticateToken, requireRole } from '../middlewares/auth.js';
 
@@ -45,6 +48,12 @@ router.delete('/internship/:id', authenticateToken, requireRole(['Commission Cha
 
 // Generate commission evaluation report
 router.post('/internship/generate-report', authenticateToken, requireRole(['Commission Chair', 'Commission Member', 'General Admin']), generateCommissionReport);
+
+// Upload document for internship
+router.post('/internship/upload-document', authenticateToken, requireRole(['Commission Chair', 'Commission Member', 'General Admin']), uploadMiddleware.single('file'), uploadDocument);
+
+// Get signed URL for internship document
+router.get('/internship/:id/document-url', authenticateToken, getDocumentUrl);
 
 // DEBUG: Delete internship by studentId and type (NO AUTH - for debugging only)
 router.delete('/debug/internship/:studentId/:type', debugDeleteInternship);

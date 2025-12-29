@@ -14,6 +14,13 @@ const StudentList = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+    // Toast notification helper
+    const showToast = (message, type = 'info') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+    };
 
     // Fetch terms on component mount
     useEffect(() => {
@@ -100,6 +107,34 @@ const StudentList = () => {
         if (grade === 'S') return 'S';
         if (grade === 'U') return 'U';
         return '-';
+    };
+
+    const handleViewDocument = async (internshipId, documentUrl) => {
+        if (!documentUrl) {
+            showToast('Döküman bulunamadı.', 'error');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+                `${API_URL}/internship/${internshipId}/document-url`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success && response.data.url) {
+                window.open(response.data.url, '_blank');
+            } else {
+                showToast('Döküman URL\'si alınamadı.', 'error');
+            }
+        } catch (error) {
+            console.error('Error fetching document URL:', error);
+            showToast('Döküman yüklenirken hata oluştu.', 'error');
+        }
     };
 
     const handleGenerateReport = async () => {
@@ -247,18 +282,19 @@ const StudentList = () => {
                                 <th>Başlangıç Tarihi</th>
                                 <th>Bitiş Tarihi</th>
                                 <th>Staj Notu</th>
+                                <th>Döküman</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>
+                                    <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
                                         <i className="fa-solid fa-spinner fa-spin"></i> Yükleniyor...
                                     </td>
                                 </tr>
                             ) : students.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>
+                                    <td colSpan="8" style={{ textAlign: 'center', padding: '30px' }}>
                                         <i className="fa-solid fa-circle-info"></i> Seçili filtrelere uygun öğrenci bulunamadı.
                                     </td>
                                 </tr>
@@ -289,6 +325,15 @@ const StudentList = () => {
                                                     {getGradeDisplay(student.currentInternship.grade)}
                                                 </span>
                                             </td>
+                                            <td>
+                                                <button 
+                                                    className="btn-view-document"
+                                                    onClick={() => handleViewDocument(student.currentInternship.id, student.currentInternship.documentUrl)}
+                                                    title="Dökümanı Görüntüle"
+                                                >
+                                                    <i className="fa-solid fa-file-pdf"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     );
                                 })
@@ -308,6 +353,24 @@ const StudentList = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className={`toast-notification toast-${toast.type}`}>
+                    <div className="toast-content">
+                        <i className={`fa-solid fa-${
+                            toast.type === 'success' ? 'check-circle' :
+                            toast.type === 'error' ? 'exclamation-circle' :
+                            toast.type === 'warning' ? 'exclamation-triangle' :
+                            'info-circle'
+                        }`}></i>
+                        <span>{toast.message}</span>
+                    </div>
+                    <button className="toast-close" onClick={() => setToast({ show: false, message: '', type: '' })}>
+                        <i className="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
