@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import authService from '../../services/authService';
 import './Login.css';
+import { validateEmail } from '../../utils/validation';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -22,10 +24,20 @@ const Login = () => {
         if (error) setError('');
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        if (!validateEmail(formData.email)) {
+            setError('Geçerli bir e-posta adresi giriniz.');
+            setLoading(false);
+            return;
+        }
 
         try {
             const response = await authService.login(formData.email, formData.password);
@@ -82,16 +94,26 @@ const Login = () => {
                         </div>
                         <div className="input-group">
                             <label htmlFor="password">Şifre</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="Şifrenizi giriniz"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                disabled={loading}
-                            />
+                            <div className="password-wrapper">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    placeholder="Şifrenizi giriniz"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={togglePasswordVisibility}
+                                    tabIndex="-1"
+                                >
+                                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                </button>
+                            </div>
                         </div>
                         <div className="forgot-password">
                             <a href="#!" onClick={handleForgotPassword}>Şifremi unuttum</a>

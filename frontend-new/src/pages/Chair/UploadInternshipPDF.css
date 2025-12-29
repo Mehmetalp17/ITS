@@ -730,3 +730,49 @@
 .btn-confirm-danger:hover {
     background-color: #c82333;
 }
+
+/* Enhanced Responsive */
+@media (max-width: 768px) {
+    .formatted-form .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .formatted-form .form-group label {
+        flex-basis: 100%;
+        margin-bottom: 5px;
+        width: 100%;
+    }
+    .formatted-form .form-group select,
+    .formatted-form .form-group input[type="file"],
+    .input-group-with-button {
+        flex-basis: 100%;
+        width: 100%;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-buttons > div {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .form-buttons .btn-submit {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .validation-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .header-right {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}

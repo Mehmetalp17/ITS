@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import authService from '../../services/authService';
 import './ForgotPassword.css';
+import { validateEmail, validatePassword, getPasswordPolicyMessage } from '../../utils/validation';
 
 const ForgotPassword = () => {
     const navigate = useNavigate();
@@ -19,6 +20,8 @@ const ForgotPassword = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -36,6 +39,11 @@ const ForgotPassword = () => {
         
         if (!formData.email) {
             setError('E-posta adresi giriniz');
+            return;
+        }
+
+        if (!validateEmail(formData.email)) {
+            setError('Geçerli bir e-posta adresi giriniz.');
             return;
         }
 
@@ -84,8 +92,8 @@ const ForgotPassword = () => {
             return;
         }
 
-        if (formData.newPassword.length < 6) {
-            setError('Şifre en az 6 karakter olmalıdır');
+        if (!validatePassword(formData.newPassword)) {
+            setError(getPasswordPolicyMessage());
             return;
         }
 
@@ -189,29 +197,49 @@ const ForgotPassword = () => {
                             <form onSubmit={handlePasswordSubmit}>
                                 <div className="input-group">
                                     <label htmlFor="newPassword">Yeni Şifre</label>
-                                    <input
-                                        type="password"
-                                        id="newPassword"
-                                        name="newPassword"
-                                        placeholder="Yeni şifrenizi giriniz"
-                                        value={formData.newPassword}
-                                        onChange={handleChange}
-                                        required
-                                        disabled={loading}
-                                    />
+                                    <div className="password-wrapper">
+                                        <input
+                                            type={showNewPassword ? "text" : "password"}
+                                            id="newPassword"
+                                            name="newPassword"
+                                            placeholder="Yeni şifrenizi giriniz"
+                                            value={formData.newPassword}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={loading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                            tabIndex="-1"
+                                        >
+                                            <i className={`fa-solid ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="input-group">
                                     <label htmlFor="confirmPassword">Yeni Şifre (Tekrar)</label>
-                                    <input
-                                        type="password"
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        placeholder="Yeni şifrenizi tekrar giriniz"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        disabled={loading}
-                                    />
+                                    <div className="password-wrapper">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            placeholder="Yeni şifrenizi tekrar giriniz"
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={loading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            tabIndex="-1"
+                                        >
+                                            <i className={`fa-solid ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <button 
                                     type="submit" 

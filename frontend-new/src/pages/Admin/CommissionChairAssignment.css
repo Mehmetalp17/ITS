@@ -426,3 +426,50 @@
 .btn-confirm-danger:hover {
     background: #c82333 !important;
 }
+
+/* Enhanced Responsive */
+@media (max-width: 768px) {
+    .content-layout {
+        flex-direction: column;
+    }
+    
+    .content-layout .form-container-card,
+    .content-layout .table-container-card {
+        min-width: 100%;
+        flex: 1 1 auto;
+    }
+    
+    .form-container-card, .table-container-card {
+        padding: 15px;
+    }
+    
+    .formatted-form .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .formatted-form .form-group label,
+    .formatted-form .form-group select,
+    .formatted-form .form-group input {
+        flex-basis: 100%;
+        width: 100%;
+    }
+    
+    /* Table Responsive */
+    .table-container-card {
+        overflow-x: auto;
+    }
+    
+    .styled-table {
+        min-width: 600px; /* Force min width so it scrolls instead of squishing */
+    }
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}

@@ -227,3 +227,46 @@
         min-width: 100%;
     }
 }
+
+/* Enhanced Responsive */
+@media (max-width: 768px) {
+    .table-container-card {
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    .table-header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .btn-generate-report {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Table Wrapper for Horizontal Scroll */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef; /* Optional: adds a border to the scroll area */
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+

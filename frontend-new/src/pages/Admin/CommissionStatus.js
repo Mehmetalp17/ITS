@@ -163,26 +163,28 @@ const CommissionStatus = () => {
                         Henüz atanmış komisyon bulunmamaktadır.
                     </div>
                 ) : (
-                    <table className="styled-table">
-                        <thead>
-                            <tr>
-                                <th>Bölüm</th>
-                                <th>Başkan</th>
-                                <th>Üye 1</th>
-                                <th>Üye 2</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {commissionData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.departmentName}</td>
-                                    <td>{item.chairName || '-'}</td>
-                                    <td>{item.member1 || '-'}</td>
-                                    <td>{item.member2 || '-'}</td>
+                    <div className="table-wrapper">
+                        <table className="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Bölüm</th>
+                                    <th>Başkan</th>
+                                    <th>Üye 1</th>
+                                    <th>Üye 2</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {commissionData.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.departmentName}</td>
+                                        <td>{item.chairName || '-'}</td>
+                                        <td>{item.member1 || '-'}</td>
+                                        <td>{item.member2 || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>

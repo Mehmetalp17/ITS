@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import CustomSelect from '../../components/common/CustomSelect';
 import './CommissionChairAssignment.css';
 
 // API Configuration
@@ -171,21 +172,15 @@ const CommissionChairAssignment = () => {
                     <form className="formatted-form" onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="departmentId">Bölüm Seçiniz:</label>
-                            <select
-                                id="departmentId"
-                                name="departmentId"
-                                value={formData.departmentId}
-                                onChange={handleDepartmentChange}
-                                required
+                            <CustomSelect
+                                options={departments.map(dept => ({ value: dept.id.toString(), label: dept.name }))}
+                                value={formData.departmentId ? formData.departmentId.toString() : ''}
+                                onChange={(val) => {
+                                    handleDepartmentChange({ target: { value: val } });
+                                }}
                                 disabled={loading}
-                            >
-                                <option value="">Bölüm seçiniz...</option>
-                                {departments.map(dept => (
-                                    <option key={dept.id} value={dept.id}>
-                                        {dept.name}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="Bölüm seçiniz..."
+                            />
                         </div>
 
                         <div className="form-group">
@@ -272,30 +267,32 @@ const CommissionChairAssignment = () => {
                             Lütfen önce bir bölüm seçiniz.
                         </div>
                     ) : currentChair ? (
-                        <table className="styled-table">
-                            <thead>
-                                <tr>
-                                    <th>İsim Soyisim</th>
-                                    <th>E-posta</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{currentChair.name}</td>
-                                    <td>{currentChair.email}</td>
-                                    <td>
-                                        <button 
-                                            className="btn-sil" 
-                                            onClick={handleRemoveChair}
-                                            disabled={loading}
-                                        >
-                                            <i className="fa-solid fa-trash"></i> Sil
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div className="table-wrapper">
+                            <table className="styled-table">
+                                <thead>
+                                    <tr>
+                                        <th>İsim Soyisim</th>
+                                        <th>E-posta</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{currentChair.name}</td>
+                                        <td>{currentChair.email}</td>
+                                        <td>
+                                            <button 
+                                                className="btn-sil" 
+                                                onClick={handleRemoveChair}
+                                                disabled={loading}
+                                            >
+                                                <i className="fa-solid fa-trash"></i> Sil
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
                         <div className="info-bar">
                             <i className="fa-solid fa-circle-info"></i>

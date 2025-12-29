@@ -6,16 +6,19 @@
     margin-bottom: 20px;
 }
 
+/* Narrower form on desktop */
 .content-layout .form-container-card {
     flex: 1;
-    min-width: 350px;
-    max-width: 450px;
+    min-width: 300px;
+    max-width: 380px;
 }
 
 .content-layout .table-container-card {
     flex: 1.5;
-    min-width: 400px;
+    min-width: 350px;
 }
+
+
 
 /* Form Container Card */
 .form-container-card {
@@ -443,4 +446,83 @@
 
 .btn-confirm-danger:hover {
     background: #c82333 !important;
+}
+
+/* Ensure box model is handled correctly to prevent overflow */
+.content-layout,
+.content-layout * {
+    box-sizing: border-box;
+}
+
+/* Enhanced Responsive */
+@media (max-width: 768px) {
+    .content-layout {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .content-layout .form-container-card,
+    .content-layout .table-container-card {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
+        padding: 15px;
+    }
+    
+    .formatted-form .form-group {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 15px;
+        width: 100%;
+    }
+    
+    .formatted-form .form-group label {
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+
+    .formatted-form .form-group label,
+    .formatted-form .form-group select,
+    .formatted-form .form-group input {
+        flex-basis: auto;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .formatted-form .form-group input,
+    .formatted-form .form-group select {
+        padding: 10px;
+        font-size: 16px; /* Prevent iOS zoom */
+        height: auto;
+    }
+    
+    .btn-submit {
+        margin-top: 10px;
+        padding: 12px;
+    }
+
+    .table-container-card {
+        overflow-x: hidden;
+    }
+    
+    .table-wrapper {
+        margin-bottom: 0;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    .styled-table {
+        min-width: 500px;
+    }
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
 }

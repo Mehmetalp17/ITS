@@ -1,0 +1,130 @@
+/* Custom Select Styles */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-trigger {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9em;
+    font-family: 'Poppins', sans-serif;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #495057;
+    transition: all 0.2s;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.custom-select-trigger.disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
+.custom-select-trigger:focus,
+.custom-select-trigger.open {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.custom-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    margin-top: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    animation: fadeIn 0.1s ease-out;
+}
+
+.custom-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.custom-option:hover {
+    background-color: #f8f9fa;
+}
+
+.custom-option.selected {
+    background-color: #e7f3ff;
+    color: #007bff;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Mobile Styles */
+@media (max-width: 768px) {
+    .custom-select-trigger {
+        font-size: 16px; /* Prevent iOS zoom */
+        padding: 12px 10px;
+        min-height: 44px;
+    }
+    
+    .custom-option {
+        padding: 12px 10px;
+        font-size: 16px;
+    }
+
+    /* Compact mode for tables on mobile */
+    .custom-select-wrapper.table-select .custom-select-trigger {
+        font-size: 11px !important;
+        padding: 6px 4px !important;
+        min-height: 28px !important;
+        height: 28px !important;
+        line-height: normal;
+    }
+
+    .custom-select-wrapper.table-select .custom-select-trigger span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 85%;
+    }
+
+    .custom-select-wrapper.table-select .custom-select-trigger i {
+        font-size: 9px !important;
+        margin-left: 2px;
+    }
+}
+
+/* Portal specific styles */
+.custom-select-options-portal {
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-height: 250px;
+    overflow-y: auto;
+    animation: fadeIn 0.1s ease-out;
+    box-sizing: border-box;
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Small text modifier for portal */
+.custom-select-options-portal.small-text .custom-option {
+    font-size: 11px !important;
+    padding: 8px 10px !important;
+}
