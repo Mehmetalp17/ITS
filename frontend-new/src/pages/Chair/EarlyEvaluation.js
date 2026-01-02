@@ -73,27 +73,7 @@ const EarlyEvaluation = () => {
         }
     };
 
-    // Get term dates for the selected term
-    const getSelectedTermDates = () => {
-        const term = terms.find(t => t.id.toString() === selectedTerm);
-        if (term) {
-            return {
-                start: new Date(term.startDate).toISOString().split('T')[0],
-                end: new Date(term.endDate).toISOString().split('T')[0]
-            };
-        }
-        return { start: '', end: '' };
-    };
 
-    // Tarihin dönem dışında olup olmadığını kontrol et
-    const isOutOfTermRange = (startDate, endDate) => {
-        const termDates = getSelectedTermDates();
-        if (!termDates.start || !termDates.end) return false;
-        
-        const start = new Date(startDate).toISOString().split('T')[0];
-        const end = new Date(endDate).toISOString().split('T')[0];
-        return start < termDates.start || end > termDates.end;
-    };
 
     // Filtreleme
     const filteredStudents = students.filter(student => {
@@ -406,13 +386,8 @@ const EarlyEvaluation = () => {
                                 filteredStudents.map(student => {
                                     if (!student.currentInternship) return null;
                                     
-                                    const outOfRange = isOutOfTermRange(
-                                        student.currentInternship.startDate,
-                                        student.currentInternship.endDate
-                                    );
-                                    
                                     return (
-                                        <tr key={student.id} className={outOfRange ? 'out-of-term-range' : ''}>
+                                        <tr key={student.id}>
                                             <td>
                                                 <input 
                                                     type="checkbox"
