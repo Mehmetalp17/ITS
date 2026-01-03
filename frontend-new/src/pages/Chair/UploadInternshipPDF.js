@@ -134,6 +134,16 @@ const UploadInternshipPDF = () => {
                 throw new Error('Kullanıcı bölümü bulunamadı.');
             }
 
+            // Validate date order
+            const startDate = new Date(student.internshipInfo.startDate);
+            const endDate = new Date(student.internshipInfo.endDate);
+            
+            if (startDate >= endDate) {
+                setError('Başlangıç tarihi bitiş tarihinden önce olmalıdır.');
+                setLoading(false);
+                return;
+            }
+
             // Prepare internship data
             const internshipData = {
                 studentId: student.studentInfo.studentNumber,
@@ -222,6 +232,17 @@ const UploadInternshipPDF = () => {
                 const student = studentsData[i];
                 
                 try {
+                    // Validate date order
+                    const startDate = new Date(student.internshipInfo.startDate);
+                    const endDate = new Date(student.internshipInfo.endDate);
+                    
+                    if (startDate >= endDate) {
+                        failCount++;
+                        errors.push(`${student.studentInfo.name}: Başlangıç tarihi bitiş tarihinden önce olmalıdır.`);
+                        console.error(`Invalid date order for student ${student.studentInfo.name}`);
+                        continue;
+                    }
+
                     const internshipData = {
                         studentId: student.studentInfo.studentNumber,
                         studentName: student.studentInfo.name,
@@ -400,6 +421,19 @@ const UploadInternshipPDF = () => {
         setStudentsData(updatedStudents);
     };
 
+    const isDateOutOfRange = (dateStr) => {
+        if (!dateStr || !selectedTermId || terms.length === 0) return false;
+        
+        const selectedTerm = terms.find(t => t.id === selectedTermId);
+        if (!selectedTerm) return false;
+
+        const termStartDate = new Date(selectedTerm.startDate);
+        const termEndDate = new Date(selectedTerm.endDate);
+        const checkDate = new Date(dateStr);
+
+        return checkDate < termStartDate || checkDate > termEndDate;
+    };
+
     const currentStudent = studentsData[currentStudentIndex];
 
     return (
@@ -553,19 +587,25 @@ const UploadInternshipPDF = () => {
                                 />
                             </div>
                             <div className="compact-form-group">
-                                <label>Başlangıç</label>
+                                <label style={{ color: isDateOutOfRange(currentStudent.internshipInfo.startDate) ? 'red' : 'inherit' }}>
+                                    Başlangıç {isDateOutOfRange(currentStudent.internshipInfo.startDate) && <span style={{fontSize: '0.8em', marginLeft: '5px'}}>(Dönem Dışı)</span>}
+                                </label>
                                 <input 
                                     type="date" 
                                     value={currentStudent.internshipInfo.startDate}
                                     onChange={(e) => handleInputChange('startDate', e.target.value, 'internshipInfo')}
+                                    style={{ borderColor: isDateOutOfRange(currentStudent.internshipInfo.startDate) ? 'red' : '' }}
                                 />
                             </div>
                             <div className="compact-form-group">
-                                <label>Bitiş</label>
+                                <label style={{ color: isDateOutOfRange(currentStudent.internshipInfo.endDate) ? 'red' : 'inherit' }}>
+                                    Bitiş {isDateOutOfRange(currentStudent.internshipInfo.endDate) && <span style={{fontSize: '0.8em', marginLeft: '5px'}}>(Dönem Dışı)</span>}
+                                </label>
                                 <input 
                                     type="date" 
                                     value={currentStudent.internshipInfo.endDate}
                                     onChange={(e) => handleInputChange('endDate', e.target.value, 'internshipInfo')}
+                                    style={{ borderColor: isDateOutOfRange(currentStudent.internshipInfo.endDate) ? 'red' : '' }}
                                 />
                             </div>
                             <div className="compact-form-group">

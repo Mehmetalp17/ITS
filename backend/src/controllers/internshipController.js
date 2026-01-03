@@ -144,6 +144,13 @@ export async function createInternship(req, res) {
       });
     }
 
+    // Validate date order
+    if (parsedStartDate >= parsedEndDate) {
+      return res.status(400).json({ 
+        error: 'Başlangıç tarihi bitiş tarihinden önce olmalıdır.' 
+      });
+    }
+
     // Upsert student (create if not exists, update if exists)
     await prisma.student.upsert({
       where: { id: studentId },
@@ -284,6 +291,27 @@ export async function updateInternship(req, res) {
     }
     if (updateData.endDate) {
       updateData.endDate = parseDate(updateData.endDate);
+    }
+
+    // Validate date order if both dates are being updated or if one is updated
+    if (updateData.startDate || updateData.endDate) {
+      // Fetch existing internship to get the other date if only one is being updated
+      const existingInternship = await prisma.internship.findUnique({
+        where: { id: parseInt(id) }
+      });
+
+      if (!existingInternship) {
+        return res.status(404).json({ error: 'Internship not found' });
+      }
+
+      const finalStartDate = updateData.startDate || existingInternship.startDate;
+      const finalEndDate = updateData.endDate || existingInternship.endDate;
+
+      if (finalStartDate >= finalEndDate) {
+        return res.status(400).json({ 
+          error: 'Başlangıç tarihi bitiş tarihinden önce olmalıdır.' 
+        });
+      }
     }
 
     const internship = await prisma.internship.update({
@@ -792,15 +820,60 @@ export async function generateCommissionReport(req, res) {
             text: '',
             spacing: { before: 800, after: 400 }
           }),
+          
+          // Commission Chair Signature
           new Paragraph({
-            text: '___________________________',
+            children: [
+              new TextRun({
+                text: 'Komisyon Başkanı:',
+                bold: true,
+                size: 22,
+              })
+            ],
+            spacing: { after: 200 }
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: commissionChair?.name || 'Belirtilmemiş',
+                size: 22,
+              })
+            ],
             spacing: { after: 100 }
           }),
           new Paragraph({
-            text: 'Komisyon Başkanı İmzası',
-            alignment: AlignmentType.LEFT,
+            text: 'İmza: ___________________________',
             spacing: { after: 400 }
           }),
+          
+          // Commission Members Signatures
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: 'Komisyon Üyeleri:',
+                bold: true,
+                size: 22,
+              })
+            ],
+            spacing: { after: 200 }
+          }),
+          
+          // Add signature line for each member
+          ...commissionMembers.map(member => [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: member.name,
+                  size: 22,
+                })
+              ],
+              spacing: { after: 100 }
+            }),
+            new Paragraph({
+              text: 'İmza: ___________________________',
+              spacing: { after: 300 }
+            })
+          ]).flat(),
         ]
       }]
     });

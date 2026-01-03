@@ -75,27 +75,7 @@ const StudentList = () => {
         }
     };
 
-    // Get term dates for the selected term
-    const getSelectedTermDates = () => {
-        const term = terms.find(t => t.id.toString() === selectedTerm);
-        if (term) {
-            return {
-                start: new Date(term.startDate).toISOString().split('T')[0],
-                end: new Date(term.endDate).toISOString().split('T')[0]
-            };
-        }
-        return { start: '', end: '' };
-    };
 
-    // Tarihin dönem dışında olup olmadığını kontrol et
-    const isOutOfTermRange = (startDate, endDate) => {
-        const termDates = getSelectedTermDates();
-        if (!termDates.start || !termDates.end) return false;
-        
-        const start = new Date(startDate).toISOString().split('T')[0];
-        const end = new Date(endDate).toISOString().split('T')[0];
-        return start < termDates.start || end > termDates.end;
-    };
 
     const getGradeBadgeClass = (grade) => {
         if (grade === 'S') return 'grade-s';
@@ -263,13 +243,7 @@ const StudentList = () => {
                         {loading ? 'Yükleniyor...' : `${students.length} öğrenci`}
                     </span>
                 </div>
-                
-                <div className="info-legend">
-                    <span className="legend-item">
-                        <span className="legend-box out-of-range"></span>
-                        Kırmızı çerçeve: Dönem dışı tarih
-                    </span>
-                </div>
+
 
                 <div className="table-wrapper">
                     <table className="styled-table">
@@ -302,13 +276,8 @@ const StudentList = () => {
                                 students.map((student, index) => {
                                     if (!student.currentInternship) return null;
                                     
-                                    const outOfRange = isOutOfTermRange(
-                                        student.currentInternship.startDate,
-                                        student.currentInternship.endDate
-                                    );
-                                    
                                     return (
-                                        <tr key={`${student.id}-${student.currentInternship.id}`} className={outOfRange ? 'out-of-term-range' : ''}>
+                                        <tr key={`${student.id}-${student.currentInternship.id}`}>
                                             <td>{student.studentNumber}</td>
                                             <td>{student.name}</td>
                                             <td>
